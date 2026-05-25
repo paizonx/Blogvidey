@@ -1,102 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Videy Gallery</title>
-
-<style>
-
-body{
-    margin:0;
-    background:#111;
-    font-family:Arial;
-    color:white;
-}
-
-.header{
-    text-align:center;
-    padding:20px;
-    font-size:28px;
-    font-weight:bold;
-}
-
-.container{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:20px;
-    padding:20px;
-}
-
-.card{
-    background:#1c1c1c;
-    border-radius:12px;
-    overflow:hidden;
-    transition:0.3s;
-    box-shadow:0 0 10px rgba(0,0,0,0.4);
-}
-
-.card:hover{
-    transform:translateY(-5px);
-}
-
-.thumb{
-    width:100%;
-    height:350px;
-    object-fit:cover;
-    background:#222;
-}
-
-.content{
-    padding:15px;
-}
-
-.title{
-    font-size:16px;
-    line-height:1.4;
-    margin-bottom:15px;
-}
-
-.btn{
-    display:block;
-    text-align:center;
-    background:#ff0033;
-    color:white;
-    padding:12px;
-    border-radius:8px;
-    text-decoration:none;
-    font-weight:bold;
-}
-
-.loading{
-    text-align:center;
-    padding:50px;
-    font-size:20px;
-}
-
-</style>
-</head>
-<body>
-
-<div class="header">
-    VIDEY GALLERY
-</div>
-
-<div id="loading" class="loading">
-    Loading videos...
-</div>
-
-<div class="container" id="videos"></div>
-
 <script>
 
-// FEED BLOGGER
-const feedUrl = "https://cdnvidey123.blogspot.com/feeds/posts/default?alt=json";
-
-fetch(feedUrl)
-.then(res => res.json())
-.then(data => {
+function loadVideos(data){
 
     const posts = data.feed.entry;
     let html = "";
@@ -106,10 +10,10 @@ fetch(feedUrl)
         // JUDUL
         const title = post.title.$t;
 
-        // ISI HTML POSTINGAN
+        // ISI POST
         const content = post.content.$t;
 
-        // LINK POSTINGAN BLOGGER
+        // LINK POSTINGAN
         let postUrl = "#";
 
         post.link.forEach(link => {
@@ -118,14 +22,14 @@ fetch(feedUrl)
             }
         });
 
-        // AMBIL GAMBAR
+        // GAMBAR
         const imgMatch = content.match(/<img[^>]+src="([^">]+)"/i);
 
         const image = imgMatch
             ? imgMatch[1]
             : "https://via.placeholder.com/500x700?text=No+Image";
 
-        // AMBIL ID VIDEY
+        // VIDEY ID
         const videyMatch = content.match(/videy\.(?:co|me)\/(?:v\/\?id=)?([a-zA-Z0-9]+)/i);
 
         const videyId = videyMatch
@@ -165,17 +69,8 @@ fetch(feedUrl)
 
     document.getElementById("videos").innerHTML = html;
 
-})
-.catch(err => {
-
-    document.getElementById("loading").innerHTML =
-        "Failed load blogger feed.";
-
-    console.log(err);
-
-});
+}
 
 </script>
 
-</body>
-</html>
+<script src="https://cdnvidey123.blogspot.com/feeds/posts/default?alt=json-in-script&callback=loadVideos"></script>
