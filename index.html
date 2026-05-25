@@ -94,7 +94,7 @@
 
         <!-- Kolom Pencarian Cepat -->
         <div class="relative w-full md:w-80">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-450">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-455">
                 <i class="fa-solid fa-magnifying-glass text-xs"></i>
             </span>
             <input 
@@ -185,7 +185,7 @@
             <!-- Diisi otomatis berdasarkan label blog -->
         </section>
 
-        <!-- TAMPILAN 1: TABEL DATA DETAIL (UTAMA) -->
+        <!-- TAMPILAN 1: TABEL DATA DETAIL -->
         <section id="tableViewSection" class="bg-gray-900/20 border border-gray-850 rounded-2xl overflow-hidden mb-8">
             <div class="p-4 border-b border-gray-850 flex items-center justify-between bg-gray-950/45">
                 <span class="text-xs font-bold text-indigo-300 tracking-wider uppercase flex items-center gap-2">
@@ -199,7 +199,7 @@
                     <thead>
                         <tr class="bg-gray-950/90 border-b border-gray-850 text-gray-400 text-xs uppercase font-bold tracking-wider">
                             <th class="p-4 text-center">No</th>
-                            <th class="p-4">Gambar Thumbnail</th>
+                            <th class="p-4">Gambar Thumbnail (Video Poster / Post)</th>
                             <th class="p-4">Judul Postingan Blogspot</th>
                             <th class="p-4">ID Video</th>
                             <th class="p-4">Direct URL Video (.mp4)</th>
@@ -281,7 +281,7 @@
                             </span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button id="modalLikeBtn" onclick="toggleModalLike()" class="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 border border-gray-800 px-4 py-2 rounded-xl text-xs font-semibold text-gray-350 hover:text-rose-500 transition-all">
+                            <button id="modalLikeBtn" onclick="toggleModalLike()" class="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 border border-gray-800 px-4 py-2 rounded-xl text-xs font-semibold text-gray-355 hover:text-rose-500 transition-all">
                                 <i class="fa-solid fa-heart" id="modalLikeIcon"></i>
                                 <span id="modalVideoLikes">0</span>
                             </button>
@@ -301,7 +301,7 @@
 
                 <!-- Rekomendasi Samping -->
                 <div class="border-t lg:border-t-0 lg:border-l border-gray-900 pt-8 lg:pt-0 lg:pl-8">
-                    <h3 class="text-xs font-bold text-gray-450 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <h3 class="text-xs font-bold text-gray-455 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-rectangle-list text-indigo-400"></i>
                         <span>Postingan Terkait</span>
                     </h3>
@@ -335,7 +335,6 @@
 
         // Pemuatan Awal Aplikasi
         window.addEventListener('DOMContentLoaded', () => {
-            // Jalankan ekstraksi otomatis secara langsung di awal untuk blog target
             fetchBloggerPosts();
             setupSearch();
         });
@@ -377,43 +376,69 @@
                         const title = entry.title ? entry.title.$t : `Postingan Tanpa Judul #${idx + 1}`;
                         const content = entry.content ? entry.content.$t : '';
                         
-                        // 1. Ekstraksi Gambar Thumbnail dari konten HTML postingan
-                        let thumbUrl = '';
-                        const imgRegex = /<img[^>]+src="([^">]+)"/i;
-                        const imgMatch = content.match(imgRegex);
-                        if (imgMatch) {
-                            thumbUrl = imgMatch[1];
-                        } else if (entry.media$thumbnail) {
-                            // Gunakan thumbnail kustom Blogger jika tidak ada gambar langsung di dalam tulisan
-                            thumbUrl = entry.media$thumbnail.url.replace(/\/s72\-c/, '/s1600');
-                        } else {
-                            // Gunakan gambar placeholder jika sama sekali kosong
-                            thumbUrl = 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=600';
-                        }
-
-                        // 2. Ekstraksi ID Video & Penentuan Server Direct URL
-                        // Mendukung Server slicedrive.com dan videy.co
+                        // 1. EKSTRAKSI ID VIDEO & PENENTUAN SERVER DIRECT URL (DILAKUKAN DI AWAL)
                         let videoId = 'Tidak Terdeteksi';
-                        let directVideoUrl = 'Tidak Terdeteksi';
+                        let directVideoUrl = '';
                         let serverName = 'slicedrive.com';
 
-                        // Regex untuk mendeteksi domain slicedrive.com atau cdn.slicedrive.com
+                        // Regex pendeteksi domain slicedrive.com atau cdn.slicedrive.com
                         const slicedriveRegex = /(?:cdn\.slicedrive\.com|slicedrive\.com)\/(?:v\?id=|embed\/|v\/|embed\?id=)?([a-zA-Z0-9_-]+)/i;
-                        // Regex untuk mendeteksi domain videy.co atau cdn.videy.co
+                        // Regex pendeteksi domain videy.co atau cdn.videy.co
                         const videyRegex = /(?:cdn\.videy\.co|videy\.co)\/(?:v\?id=|embed\/|v\/|embed\?id=)?([a-zA-Z0-9_-]+)/i;
 
                         let matchSlice = content.match(slicedriveRegex);
                         let matchVidey = content.match(videyRegex);
 
                         if (matchSlice) {
-                            // Ambil ID dan bersihkan ekstensi file jika terbawa
                             videoId = matchSlice[1].replace('.mp4', '');
-                            directVideoUrl = `https://cdn.slicedrive.com/${videoId}.mp4`;
+                            // Diubah dari cdn.slicedrive.com ke cdn.videy.co sesuai permintaan user
+                            directVideoUrl = `https://cdn.videy.co/${videoId}.mp4`;
                             serverName = 'slicedrive.com';
                         } else if (matchVidey) {
                             videoId = matchVidey[1].replace('.mp4', '');
                             directVideoUrl = `https://cdn.videy.co/${videoId}.mp4`;
                             serverName = 'videy.co';
+                        }
+
+                        // 2. EKSTRAKSI GAMBAR THUMBNAIL DARI VIDEO / POSTINGAN SECARA CERDAS
+                        let thumbUrl = '';
+                        
+                        // Strategi A: Cari atribut 'poster' di tag video dalam postingan blog
+                        const posterRegex = /<video[^>]+poster=["']([^"']+)["']/i;
+                        const posterMatch = content.match(posterRegex);
+                        
+                        if (posterMatch && posterMatch[1]) {
+                            thumbUrl = posterMatch[1];
+                        } else {
+                            // Strategi B: Temukan tag <img> yang sah di dalam postingan (abaikan pelacak & emoticon)
+                            const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
+                            let imgMatch;
+                            let validImages = [];
+                            while ((imgMatch = imgRegex.exec(content)) !== null) {
+                                const src = imgMatch[1];
+                                if (!src.includes('pixel') && !src.includes('analytics') && !src.includes('smiley') && !src.includes('emoticon') && !src.endsWith('.gif')) {
+                                    validImages.push(src);
+                                }
+                            }
+
+                            if (validImages.length > 0) {
+                                thumbUrl = validImages[0];
+                            } else if (entry.media$thumbnail && entry.media$thumbnail.url) {
+                                // Strategi C: Skalakan gambar thumbnail default Blogger ke ukuran kualitas tinggi
+                                let rawThumb = entry.media$thumbnail.url;
+                                thumbUrl = rawThumb
+                                    .replace(/\/s[0-9]+(-[c-k-no]+)?\//, '/s1600/')
+                                    .replace(/\/w[0-9]+-h[0-9]+-c/, '/w640-h400-c');
+                            } else if (directVideoUrl) {
+                                // Strategi D: JIKA TIDAK ADA GAMBAR, gunakan potongan Video Frame asli sebagai poster thumbnail otomatis!
+                                // Parameter `#t=2` menginstruksikan browser me-render detik ke-2 video sebagai poster image bawaan.
+                                thumbUrl = `${directVideoUrl}#t=2`;
+                            }
+                        }
+
+                        // Proteksi Tautan Campuran: Konversi HTTP ke HTTPS agar peramban tidak memblokir gambar
+                        if (thumbUrl && thumbUrl.startsWith('http://')) {
+                            thumbUrl = thumbUrl.replace('http://', 'https://');
                         }
 
                         // 3. Menentukan Kategori Label dari Blogger
@@ -432,9 +457,9 @@
                             views: 'Auto-Sync',
                             likes: Math.floor(Math.random() * 800) + 40,
                             liked: false,
-                            videoUrl: videoId !== 'Tidak Terdeteksi' ? directVideoUrl : '',
+                            videoUrl: directVideoUrl,
                             thumbUrl: thumbUrl,
-                            description: content.replace(/<[^>]*>/g, '').substring(0, 250) + '...', // Membersihkan tag HTML untuk teks murni
+                            description: content.replace(/<[^>]*>/g, '').substring(0, 250) + '...', 
                             fullHtmlContent: content
                         });
                     });
@@ -447,7 +472,7 @@
                     renderVideos();
                     renderTable();
 
-                    showToast(`Sukses mengekstrak ${videos.length} postingan dari Blogspot!`, "success");
+                    showToast("Sukses mengekstrak postingan dari Blogspot!", "success");
                 } catch (error) {
                     console.error("Gagal melakukan pemrosesan data feed:", error);
                     showToast("Gagal memproses data feed dari Blogspot tersebut.", "error");
@@ -531,10 +556,21 @@
                     <!-- No Urut -->
                     <td class="p-4 text-center font-bold text-gray-500">${idx + 1}</td>
                     
-                    <!-- Gambar Thumbnail -->
+                    <!-- Gambar Thumbnail (Menggunakan HTML5 Video/Poster Hybrid) -->
                     <td class="p-4">
-                        <div class="w-24 aspect-[16/10] rounded-xl overflow-hidden border border-gray-850 bg-gray-950 shadow-inner">
-                            <img src="${video.thumbUrl}" alt="Thumbnail" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=600'">
+                        <div class="w-24 aspect-[16/10] rounded-xl overflow-hidden border border-gray-850 bg-gray-950 shadow-inner relative group/table">
+                            ${video.videoUrl ? `
+                                <video 
+                                    src="${video.videoUrl}#t=2" 
+                                    poster="${video.thumbUrl}"
+                                    muted 
+                                    playsinline 
+                                    preload="metadata" 
+                                    class="w-full h-full object-cover"
+                                ></video>
+                            ` : `
+                                <img src="${video.thumbUrl}" alt="Thumbnail" class="w-full h-full object-cover">
+                            `}
                         </div>
                     </td>
                     
@@ -595,7 +631,7 @@
             `).join('');
         }
 
-        // RENDER TAMPILAN 2: GALERI VIDEO GRID (ALAT BANTU PREVIEW)
+        // RENDER TAMPILAN 2: GALERI VIDEO GRID (DENGAN HOVER PREVIEW INTERAKTIF)
         function renderVideos() {
             if (viewMode !== 'grid') return;
 
@@ -617,19 +653,31 @@
                 emptyState.classList.add('hidden');
                 videoGrid.innerHTML = filteredVideos.map(video => `
                     <div class="glass-card rounded-2xl overflow-hidden flex flex-col group relative">
-                        <!-- Thumbnail Area -->
-                        <div class="relative aspect-[16/10] overflow-hidden bg-gray-950 cursor-pointer" onclick="openVideoModal('${video.id}')">
-                            <img 
-                                src="${video.thumbUrl}" 
-                                alt="${video.title}" 
-                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                onerror="this.src='https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=600'"
-                            >
+                        <!-- Thumbnail Area (Interactive Hover Player) -->
+                        <div 
+                            class="relative aspect-[16/10] overflow-hidden bg-gray-950 cursor-pointer" 
+                            onclick="openVideoModal('${video.id}')"
+                            onmouseenter="this.querySelector('video')?.play()"
+                            onmouseleave="const v = this.querySelector('video'); if(v) { v.pause(); v.currentTime = 2; }"
+                        >
+                            ${video.videoUrl ? `
+                                <video 
+                                    src="${video.videoUrl}#t=2" 
+                                    poster="${video.thumbUrl}"
+                                    muted 
+                                    playsinline 
+                                    preload="metadata" 
+                                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                ></video>
+                            ` : `
+                                <img src="${video.thumbUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=600';">
+                            `}
+                            
                             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
 
                             <!-- Play Overlay Button -->
-                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <div class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-full p-4 shadow-xl active:scale-90 transition-transform pulse-accent">
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                <div class="bg-indigo-600/90 text-white rounded-full p-4 shadow-xl active:scale-90 pulse-accent">
                                     <i class="fa-solid fa-play text-xl ml-1"></i>
                                 </div>
                             </div>
@@ -653,7 +701,7 @@
 
                             <!-- Card Footer -->
                             <div class="flex items-center justify-between border-t border-gray-900/60 pt-4 mt-4 text-[11px] text-gray-500">
-                                <span class="truncate max-w-[120px] font-mono">ID: ${video.videyId}</span>
+                                <span class="truncate max-w-[120px] font-mono text-[10px]">ID: ${video.videyId}</span>
                                 <button 
                                     onclick="openVideoModal('${video.id}')" 
                                     class="text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1 transition-colors"
@@ -715,7 +763,7 @@
             dummy.select();
             document.execCommand("copy");
             document.body.removeChild(dummy);
-            showToast("Teks berhasil disalin ke clipboard!", "success");
+            showToast("Teks berhasil disalin!", "success");
         }
 
         function copyIdFromModal() {
@@ -861,7 +909,7 @@
             recContainer.innerHTML = related.map(v => `
                 <div class="flex gap-3 bg-gray-900/20 hover:bg-gray-900/60 p-2 rounded-xl border border-transparent hover:border-gray-900 transition-all cursor-pointer group" onclick="openVideoModal('${v.id}')">
                     <div class="relative w-20 aspect-[16/10] bg-black rounded-lg overflow-hidden shrink-0">
-                        <img src="${v.thumbUrl}" alt="${v.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=600'">
+                        <video src="${v.videoUrl}#t=2" poster="${v.thumbUrl}" muted playsinline preload="metadata" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null;"></video>
                     </div>
                     <div class="flex flex-col justify-center overflow-hidden">
                         <h4 class="text-[11px] font-bold text-gray-200 line-clamp-1 group-hover:text-indigo-400 transition-colors">${v.title}</h4>
