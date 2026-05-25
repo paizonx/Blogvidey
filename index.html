@@ -1,76 +1,61 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Videy Gallery</title>
 
-function loadVideos(data){
+<style>
 
-    const posts = data.feed.entry;
-    let html = "";
-
-    posts.forEach(post => {
-
-        // JUDUL
-        const title = post.title.$t;
-
-        // ISI POST
-        const content = post.content.$t;
-
-        // LINK POSTINGAN
-        let postUrl = "#";
-
-        post.link.forEach(link => {
-            if(link.rel === "alternate"){
-                postUrl = link.href;
-            }
-        });
-
-        // GAMBAR
-        const imgMatch = content.match(/<img[^>]+src="([^">]+)"/i);
-
-        const image = imgMatch
-            ? imgMatch[1]
-            : "https://via.placeholder.com/500x700?text=No+Image";
-
-        // VIDEY ID
-        const videyMatch = content.match(/videy\.(?:co|me)\/(?:v\/\?id=)?([a-zA-Z0-9]+)/i);
-
-        const videyId = videyMatch
-            ? videyMatch[1]
-            : "";
-
-        html += `
-        <div class="card">
-
-            <img class="thumb" src="${image}" alt="${title}">
-
-            <div class="content">
-
-                <div class="title">
-                    ${title}
-                </div>
-
-                <a class="btn" href="${postUrl}" target="_blank">
-                    WATCH NOW
-                </a>
-
-            </div>
-
-        </div>
-        `;
-
-        console.log({
-            title,
-            image,
-            videyId,
-            postUrl
-        });
-
-    });
-
-    document.getElementById("loading").style.display = "none";
-
-    document.getElementById("videos").innerHTML = html;
-
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-</script>
+body{
+    background:#111;
+    font-family:Arial,sans-serif;
+    color:white;
+}
 
-<script src="https://cdnvidey123.blogspot.com/feeds/posts/default?alt=json-in-script&callback=loadVideos"></script>
+.header{
+    text-align:center;
+    padding:20px;
+    font-size:30px;
+    font-weight:bold;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+    padding:20px;
+}
+
+.card{
+    background:#1d1d1d;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 0 10px rgba(0,0,0,0.5);
+}
+
+.thumb{
+    width:100%;
+    height:350px;
+    object-fit:cover;
+    background:#222;
+}
+
+.content{
+    padding:15px;
+}
+
+.title{
+    font-size:16px;
+    margin-bottom:15px;
+    line-height:1.4;
+}
+
+.btn{
+</html>
